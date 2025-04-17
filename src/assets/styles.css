@@ -1,0 +1,24 @@
+:root {
+    --transition-duration: 0.2s;
+    --border-radius-small: 6px;
+    --border-radius-medium: 10px;
+    --border-radius-large: 15px;
+    --page-background: #111;
+    --page-color: #ddd;
+    --text-color-muted: #666;
+    --graph-background: transparent;
+    --graph-color: rgb(40, 211, 208);
+    --backdrop-background: rgba(0, 0, 0, 0.3);
+    --nav-item-background: #151515;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--page-background);
+    color: var(--page-color);
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
