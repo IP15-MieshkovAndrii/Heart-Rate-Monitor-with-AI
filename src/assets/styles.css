@@ -3,11 +3,12 @@
     --border-radius-small: 6px;
     --border-radius-medium: 10px;
     --border-radius-large: 15px;
-    --page-background: #111;
-    --page-color: #ddd;
+    --page-background: white;
+    --page-color: black;
     --text-color-muted: #666;
     --graph-background: transparent;
-    --graph-color: rgb(40, 211, 208);
+    --graph-color: #FF0045;
+    --graph-color-secondary: #FFFFFF;
     --backdrop-background: rgba(0, 0, 0, 0.3);
     --nav-item-background: #151515;
   }

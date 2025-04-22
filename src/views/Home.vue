@@ -1,27 +1,31 @@
 <template>
     <div class="home">
-      <header>
-        <h1>Heart Rate Monitor</h1>
-        <small>Tap to start/stop monitoring</small>
-      </header>
-      <BpmDisplay />
-      <GraphCanvas />
-      <HeartRateMonitor />
+      <h5>Measuring</h5>
+      <BpmCircle />
+      <p>
+        Try to cover the entire lens and hold the phone comfortably
+      </p>
+      <img class="camera" :src="`${publicPath}finger-camera.png`" alt="Camera frame">
+
+
     </div>
   </template>
   
   <script>
-  import BpmDisplay from '../components/BpmDisplay.vue';
-  import GraphCanvas from '../components/GraphCanvas.vue';
-  import HeartRateMonitor from '../components/HeartRateMonitor.vue';
+  import BpmCircle from '../components/BpmCircle.vue';
+
   
   export default {
     name: 'Home',
-    components: {
-      BpmDisplay,
-      GraphCanvas,
-      HeartRateMonitor,
+    data () {
+      return {
+        publicPath: process.env.BASE_URL
+      }
     },
+    components: {
+      BpmCircle,
+    },
+    
   };
   </script>
   
@@ -29,7 +33,20 @@
   .home {
     display: flex;
     flex-direction: column;
+    padding-top: 10px;
     align-items: center;
     gap: 20px;
+    background-color: white;
+  }
+
+  .camera {
+    position: fixed;
+    width: 80px;
+    bottom: 0;
+  }
+  p {
+    color: #818898;
+    width: 197px;
+    font-size: 14px;
   }
 </style>
