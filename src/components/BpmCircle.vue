@@ -1,14 +1,14 @@
 <template>
-    <div class="bpm-circle" @click="toggleMonitoring">
+    <div class="bpm-circle big-shadow" @click="toggleMonitoring">
         <video ref="video" class="camera-feed" muted playsinline></video>
-        <div v-if="!showCamera" class="bpm-result">
+        <div v-if="!showCamera" class="bpm-result ">
             <span>{{ bpm || 0 }} BPM</span>
         </div>
         <div v-if="!showCamera" class="progress-container">
-            <svg class="progress-circle" viewBox="0 0 100 100">
+            <svg class="progress-circle " viewBox="0 0 100 100">
                 <circle class="background " cx="50" cy="50" r="45" />
                 <circle
-                class="progress "
+                class="progress"
                 cx="50"
                 cy="50"
                 r="45"
@@ -27,10 +27,9 @@
 </template>
   
   <script>
-  import mitt from 'mitt';
+
   import { heartRateMonitor } from '../utils/heartRateLogic';
-  
-  const emitter = mitt();
+  import emitter from '@/utils/eventBus';
   
   export default {
     name: 'BpmCircle',
@@ -63,6 +62,11 @@
             return 50 + radius * Math.sin(angle);
         },
     },
+    watch: {
+      showCamera(newValue) {
+        this.$emit('update:show-camera', newValue);
+      },
+    },
     mounted() {
       this.canvas = document.createElement('canvas');
       heartRateMonitor.initialize({
@@ -91,6 +95,8 @@
           }
         },
       });
+
+      this.toggleMonitoring();
   
       const updateProgress = () => {
         if (this.monitoring && !this.showCamera && this.measurementStartTime) {
@@ -140,6 +146,9 @@
           this.time = 0;
           this.bpm = this.finalBpm;
           this.measurementTimer = null;
+          // this.$router.push('/personal-data');
+          this.$router.push('/results');
+
         }, 20000);
       },
       clearMeasurementTimer() {
@@ -157,12 +166,13 @@
     width: 200px;
     height: 200px;
     border-radius: 50%;
-    background: linear-gradient(#FF0002, #77131E);
+    background: white;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     overflow: hidden;
+    z-index: 2;
   }
   
   .camera-feed {
@@ -225,6 +235,11 @@
     transition: cx 0.2s, cy 0.2s;
   }
 
+  .big-shadow {
+    filter: drop-shadow( 0px 36px 47px -18px rgba(159, 37, 63, 0.5));
+    box-shadow: 0px 36px 47px -18px rgba(159, 37, 63, 0.5);
+
+  }
   .shadow {
     filter: drop-shadow( 0px 0px 2px rgba(0, 0, 0, 0.2));
   }

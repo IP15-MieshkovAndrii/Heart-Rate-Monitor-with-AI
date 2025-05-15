@@ -7,8 +7,8 @@ export const heartRateMonitor = (function () {
   const PULSE_THRESHOLD = -60;
   const MAX_PERIODS = 20;
   const AVERAGE_SIZE = 20;
-  const MIN_PERIOD = 0.4; // Max 150 BPM (60/0.4)
-  const MAX_PERIOD = 1.5; // Min 40 BPM
+  const MIN_PERIOD = 0.4; 
+  const MAX_PERIOD = 1.5;
   const INVALID_ENTRY = -100;
 
   let VIDEO_ELEMENT;
@@ -68,7 +68,7 @@ export const heartRateMonitor = (function () {
           this.periods[this.periodIndex] = period;
           this.periodTimes[this.periodIndex] = time;
           this.periodIndex = (this.periodIndex + 1) % MAX_PERIODS;
-          console.log('Period:', period); // Debug period
+          // console.log('Period:', period); 
         }
         this.periodStart = time;
       }
@@ -206,12 +206,53 @@ export const heartRateMonitor = (function () {
         clearInterval(TIMER);
         TIMER = null;
       }
-      // Store heartbeat intervals and final BPM in localStorage
       const periods = PULSE_DETECTOR.getPeriods();
+      let intervalsMs = periods.map(seconds => seconds * 1000);
+
+      let hrv = 0;
+      if (intervalsMs.length > 4) {
+          intervalsMs = intervalsMs.slice(3);
+      }
+      
+      if (intervalsMs.length >= 2) {
+          const successiveDifferences = intervalsMs.slice(1).map((val, i) => Math.abs(val - intervalsMs[i]));
+          const squaredDifferences = successiveDifferences.map(val => val * val);
+          
+          if (squaredDifferences.length === 0) {
+              hrv = 0;
+          } else {
+              const meanOfSquares = squaredDifferences.reduce((sum, val) => sum + val, 0) / squaredDifferences.length;
+              hrv = Math.sqrt(meanOfSquares);
+          }
+      }
+
+      let stress = 0;
+      if (hrv > 0) {
+          stress = Math.max(0, Math.min(100, 100 - hrv * 1.5));
+      }
+
       localStorage.setItem('heartRateData', JSON.stringify({
         bpm: LAST_VALID_BPM,
-        intervals: periods
+        hrv: parseInt(hrv),
+        stress: stress,
       }));
+
+      let healthHistory = localStorage.getItem('healthHistory');
+      healthHistory = healthHistory ? JSON.parse(healthHistory) : [];
+
+      if (!Array.isArray(healthHistory)) {
+          healthHistory = [];
+      }
+      healthHistory.push({
+          date: Date.now(),
+          data: {
+              bpm: LAST_VALID_BPM,
+              hrv: parseInt(hrv),
+              stress: stress
+          }
+      });
+
+      localStorage.setItem('healthHistory', JSON.stringify(healthHistory));
       ON_BPM_CHANGE(LAST_VALID_BPM);
       ON_STATUS_CHANGE('Cover the back camera until the image turns red 🟥');
     } catch (error) {
@@ -285,11 +326,10 @@ export const heartRateMonitor = (function () {
     };
     const hsv = rgb2hsv(rgb);
 
-    console.log('HSV:', hsv);
 
     if (hsv.s > 0.4 && hsv.v > 0.4) {
       VALID_FRAME_COUNTER++;
-      console.log('Valid frame:', VALID_FRAME_COUNTER);
+      // console.log('Valid frame:', VALID_FRAME_COUNTER);
       ON_STATUS_CHANGE('Hold your index finger ☝️ still.');
       if (!MEASUREMENT_STARTED) {
         startMeasurement();
@@ -297,7 +337,7 @@ export const heartRateMonitor = (function () {
       }
       if (VALID_FRAME_COUNTER > VALID_FRAME_THRESHOLD) {
         const filtered = HUE_FILTER.processValue(hsv.h);
-        console.log('Filtered Hue:', filtered);
+        // console.log('Filtered Hue:', filtered);
         PULSE_DETECTOR.addNewValue(filtered, performance.now() / 1000);
       }
     } else {
@@ -310,12 +350,12 @@ export const heartRateMonitor = (function () {
   };
 
   const startMeasurement = () => {
-    console.log('Starting measurement');
+    // console.log('Starting measurement');
     TIMER = setInterval(() => {
       const averagePeriod = PULSE_DETECTOR.getAverage();
       const pulse = averagePeriod !== PULSE_THRESHOLD ? Math.round(60 / averagePeriod) : 0;
       if (pulse > 0) LAST_VALID_BPM = pulse; // Store valid BPM
-      console.log('Calculated pulse:', pulse);
+      // console.log('Calculated pulse:', pulse);
       ON_BPM_CHANGE(pulse);
     }, 1000);
   };

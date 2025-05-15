@@ -13,13 +13,41 @@
     --nav-item-background: #151515;
   }
   
-  body {
+  html, body {
     margin: 0;
     padding: 0;
     background: var(--page-background);
     color: var(--page-color);
+    overscroll-behavior: none;
+    /* overflow: hidden; */
   }
   
   * {
     box-sizing: border-box;
+    overscroll-behavior: none;
   }
+
+  .ellipse {
+    position: fixed;
+    top: -5vh;
+    width: 150vw;
+    height: 54vh;
+    left: -25vw;
+    background: linear-gradient(
+      162.11deg,
+      rgba(228, 250, 255, 0.3) -6.85%,
+      rgba(171, 194, 226, 0.3) 21.45%,
+      rgba(203, 165, 209, 0.3) 40%,
+      rgba(248, 113, 157, 0.3) 62.46%,
+      rgba(255, 97, 146, 0.3) 77.37%
+    );
+    filter: blur(60px);
+    transform: matrix(1, 0, 0, -1, 0, 0);
+    z-index: 1;
+  }
+
+.Very-low { color: rgba(166, 224, 255, 1); }
+.Low { color: rgba(61, 187, 255, 1); }
+.Moderate, .Medium {color: rgba(255, 190, 76, 1)}
+.Normal, .Good { color: rgba(177, 222, 53, 1); }
+.High, .Very-high { color: rgba(255, 72, 122, 1); }
