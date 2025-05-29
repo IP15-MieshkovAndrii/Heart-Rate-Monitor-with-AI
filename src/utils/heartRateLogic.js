@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export const heartRateMonitor = (function () {
   const IMAGE_WIDTH = 300;
   const IMAGE_HEIGHT = 300;
@@ -23,7 +25,7 @@ export const heartRateMonitor = (function () {
   let PULSE_DETECTOR;
   let HUE_FILTER;
   let TIMER;
-  let LAST_VALID_BPM = 0; // Store last valid BPM
+  let LAST_VALID_BPM = 0; 
 
   const publicMethods = {};
 
@@ -111,12 +113,11 @@ export const heartRateMonitor = (function () {
     constructor() {
       this.lastValue = 0;
       this.lastFiltered = 0;
-      this.alpha = 0.1; // Low-pass filter coefficient
-      this.beta = 0.1; // High-pass filter coefficient
+      this.alpha = 0.1; 
+      this.beta = 0.1;
     }
 
     processValue(value) {
-      // Band-pass: high-pass (remove DC) + low-pass (remove high-frequency noise)
       const highPass = value - this.lastValue;
       this.lastValue = value;
       const lowPass = this.alpha * highPass + (1 - this.alpha) * this.lastFiltered;
@@ -167,8 +168,7 @@ export const heartRateMonitor = (function () {
     SAMPLE_BUFFER.length = 0;
     LAST_VALID_BPM = 0;
 
-    const camera = await getCamera();
-    VIDEO_STREAM = await startCameraStream(camera);
+    VIDEO_STREAM = await startCameraStream();
 
     if (!VIDEO_STREAM) {
       throw new Error('Unable to start video stream');
@@ -231,10 +231,12 @@ export const heartRateMonitor = (function () {
           stress = Math.max(0, Math.min(100, 100 - hrv * 1.5));
       }
 
+      const id = uuidv4();
       localStorage.setItem('heartRateData', JSON.stringify({
+        id,
         bpm: LAST_VALID_BPM,
         hrv: parseInt(hrv),
-        stress: stress,
+        stress: parseInt(stress),
       }));
 
       let healthHistory = localStorage.getItem('healthHistory');
@@ -244,11 +246,12 @@ export const heartRateMonitor = (function () {
           healthHistory = [];
       }
       healthHistory.push({
+          id,
           date: Date.now(),
           data: {
               bpm: LAST_VALID_BPM,
               hrv: parseInt(hrv),
-              stress: stress
+              stress: parseInt(stress)
           }
       });
 
@@ -261,16 +264,33 @@ export const heartRateMonitor = (function () {
   };
 
   const getCamera = async () => {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const cameras = devices.filter((device) => device.kind === 'videoinput');
-    return cameras[cameras.length - 1];
+    try {
+      const initialStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment'
+        }
+      });
+
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cameras = devices.filter((device) => device.kind === 'videoinput' && device.deviceId !== '');
+      initialStream.getTracks().forEach(track => track.stop());
+      return cameras[cameras.length - 2] || null;
+    } catch (error) {
+      console.error('Failed to access camera:', error.message);
+      return null;
+    }
   };
 
-  const startCameraStream = async (camera) => {
+  const startCameraStream = async () => {
     try {
+      const camera = await getCamera();
+      if (!camera || !camera.deviceId) {
+        throw new Error('No valid camera found');
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          deviceId: camera.deviceId,
+          deviceId: { exact: camera.deviceId },
           facingMode: 'environment',
           width: { ideal: IMAGE_WIDTH },
           height: { ideal: IMAGE_HEIGHT },
@@ -325,7 +345,6 @@ export const heartRateMonitor = (function () {
       blue: blueSum / pixelCount,
     };
     const hsv = rgb2hsv(rgb);
-
 
     if (hsv.s > 0.4 && hsv.v > 0.4) {
       VALID_FRAME_COUNTER++;

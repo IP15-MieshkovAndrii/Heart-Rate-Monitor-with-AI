@@ -6,6 +6,13 @@ import Results from '@/views/Results.vue';
 import Dashboard from '@/views/Dashboard.vue';
 import History from '@/views/History.vue';
 import Measurement from '@/views/Measurement.vue';
+import SignIn from '@/views/SignIn.vue';
+import Register from '@/views/Register.vue';
+import Login from '@/views/Login.vue';
+import { resultsGuard } from '@/middlewares/results';
+import { authGuard } from '@/middlewares/auth';
+import Profile from '@/views/Profile.vue';
+import AddMeasure from '@/views/AddMeasure.vue';
 
 const routes = [
   {
@@ -19,6 +26,11 @@ const routes = [
     component: Progress,
   },
   {
+    path: '/profile',
+    name: 'Profile',
+    component: Profile,
+  },
+  {
     path: '/personal-data',
     name: 'Personal Data',
     component: PersonalData,
@@ -27,27 +39,13 @@ const routes = [
     path: '/results',
     name: 'Results',
     component: Results,
-    beforeEnter: (to, from, next) => {
-      const heartRateData = localStorage.getItem('heartRateData');
-      if (!heartRateData) {
-        next('/dashboard');
-      } else {
-        next();
-      }
-    },
+    beforeEnter: resultsGuard,
   },
   {
     path: '/results/:id',
     name: 'Measurement',
     component: Measurement,
-    beforeEnter: (to, from, next) => {
-      const heartRateData = localStorage.getItem('heartRateData');
-      if (!heartRateData) {
-        next('/dashboard');
-      } else {
-        next();
-      }
-    },
+    beforeEnter: resultsGuard,
   },
   {
     path: '/dashboard',
@@ -55,10 +53,39 @@ const routes = [
     component: Dashboard,
   },
   {
+    path: '/measure/new',
+    name: 'New Measurement',
+    component: AddMeasure,
+  },
+  {
     path: '/history',
     name: 'History',
     component: History,
-  }
+    beforeEnter: authGuard,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/sign-in',
+    name: 'Sign In',
+    component: SignIn,
+    meta: { requiresGuest: true },
+    beforeEnter: authGuard,
+    
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
+    meta: { requiresGuest: true },
+    beforeEnter: authGuard,
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { requiresGuest: true },
+    beforeEnter: authGuard,
+  },
 ];
 
 const router = createRouter({

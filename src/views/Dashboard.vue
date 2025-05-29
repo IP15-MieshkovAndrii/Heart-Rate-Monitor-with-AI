@@ -4,7 +4,7 @@
 
         <header class="header">
             <h1>Dashboard</h1>
-            <button>
+            <button @click="goToProfile">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="#1F1F1F" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
                     <path d="M2 12.8794V11.1194C2 10.0794 2.85 9.21945 3.9 9.21945C5.71 9.21945 6.45 7.93945 5.54 6.36945C5.02 5.46945 5.33 4.29945 6.24 3.77945L7.97 2.78945C8.76 2.31945 9.78 2.59945 10.25 3.38945L10.36 3.57945C11.26 5.14945 12.74 5.14945 13.65 3.57945L13.76 3.38945C14.23 2.59945 15.25 2.31945 16.04 2.78945L17.77 3.77945C18.68 4.29945 18.99 5.46945 18.47 6.36945C17.56 7.93945 18.3 9.21945 20.11 9.21945C21.15 9.21945 22.01 10.0694 22.01 11.1194V12.8794C22.01 13.9194 21.16 14.7794 20.11 14.7794C18.3 14.7794 17.56 16.0594 18.47 17.6294C18.99 18.5394 18.68 19.6994 17.77 20.2194L16.04 21.2094C15.25 21.6794 14.23 21.3994 13.76 20.6094L13.65 20.4194C12.75 18.8494 11.27 18.8494 10.36 20.4194L10.25 20.6094C9.78 21.3994 8.76 21.6794 7.97 21.2094L6.24 20.2194C5.33 19.6994 5.02 18.5294 5.54 17.6294C6.45 16.0594 5.71 14.7794 3.9 14.7794C2.85 14.7794 2 13.9194 2 12.8794Z" stroke="#1F1F1F" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
@@ -16,7 +16,7 @@
             <div v-if="flag">
                 <div class="section-header">
                     <h2>Your Pulse</h2>
-                    <span>MAR 26, 09:10</span>
+                    <span>{{ formattedDate }}</span>
                     <button @click="pulseInfo">
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M10.0001 1.66683C14.5834 1.66683 18.3334 5.41683 18.3334 10.0002C18.3334 14.5835 14.5834 18.3335 10.0001 18.3335C5.41675 18.3335 1.66675 14.5835 1.66675 10.0002C1.66675 5.41683 5.41675 1.66683 10.0001 1.66683Z" stroke="#1A1B25" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
@@ -133,7 +133,7 @@
                 <button class="see-all" @click="this.$router.push('/history')">See all</button>
             </div>
             <div class="measurement-cards">
-                <div class="card heart-rate">
+                <div class="card heart-rate" @click="pulseInfo">
                     <div class="card-header">
                         <span>Heart<br>rate</span>
                         <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -154,9 +154,20 @@
                             <path d="M20 16V21" stroke="#1F1F1F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M17 10H23" stroke="#1F1F1F" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-
                     </div>
-                    <p>130/80 <span>mmHg</span></p>
+                    <div v-if="lastMeasurement" class="measurement">
+                        <p>{{ lastMeasurement.systolic }}/{{ lastMeasurement.diastolic }} <span>mmHg</span></p>
+                    </div>
+                    <div v-else >
+                        <button class="measure-btn" @click="goToMeasurement">
+                            <span>Add</span>
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7.00008 13.2709C3.54092 13.2709 0.729248 10.4592 0.729248 7.00008C0.729248 3.54092 3.54092 0.729248 7.00008 0.729248C10.4592 0.729248 13.2709 3.54092 13.2709 7.00008C13.2709 10.4592 10.4592 13.2709 7.00008 13.2709ZM7.00008 1.60425C4.02508 1.60425 1.60425 4.02508 1.60425 7.00008C1.60425 9.97508 4.02508 12.3959 7.00008 12.3959C9.97508 12.3959 12.3959 9.97508 12.3959 7.00008C12.3959 4.02508 9.97508 1.60425 7.00008 1.60425Z" fill="white"/>
+                                <path d="M9.33317 7.4375H4.6665C4.42734 7.4375 4.229 7.23917 4.229 7C4.229 6.76083 4.42734 6.5625 4.6665 6.5625H9.33317C9.57234 6.5625 9.77067 6.76083 9.77067 7C9.77067 7.23917 9.57234 7.4375 9.33317 7.4375Z" fill="white"/>
+                                <path d="M7 9.77067C6.76083 9.77067 6.5625 9.57234 6.5625 9.33317V4.6665C6.5625 4.42734 6.76083 4.229 7 4.229C7.23917 4.229 7.4375 4.42734 7.4375 4.6665V9.33317C7.4375 9.57234 7.23917 9.77067 7 9.77067Z" fill="white"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -165,7 +176,7 @@
             <div class="new-health">
                 <h2>Track Your Health</h2>
                 <p>with My Heart Rate Monitor - Pulse</p>
-                <button @click="$router.push('/progress')" class="measure-btn">
+                <button @click="goToMeasurement" class="measure-btn">
                     <span>Measure</span>
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M7.00008 13.2709C3.54092 13.2709 0.729248 10.4592 0.729248 7.00008C0.729248 3.54092 3.54092 0.729248 7.00008 0.729248C10.4592 0.729248 13.2709 3.54092 13.2709 7.00008C13.2709 10.4592 10.4592 13.2709 7.00008 13.2709ZM7.00008 1.60425C4.02508 1.60425 1.60425 4.02508 1.60425 7.00008C1.60425 9.97508 4.02508 12.3959 7.00008 12.3959C9.97508 12.3959 12.3959 9.97508 12.3959 7.00008C12.3959 4.02508 9.97508 1.60425 7.00008 1.60425Z" fill="white"/>
@@ -195,6 +206,11 @@
         energy: 79,
         bloodPressure: '130/80',
         flag: false,
+        id: 0,
+        summaries: undefined,
+        formattedDate: '',
+        date: '',
+        pressureHistory: [],
       };
     },
     methods: {
@@ -203,8 +219,17 @@
                 bpm: this.bpm,
                 hrv: this.hrv,
                 stress: this.stress,
+                id: this.id,
+                summaries: this.summaries || undefined,
+                date: this.date
             }));
-            this.$router.push('/results')
+            this.$router.push(`/results/${this.id}`)
+        },
+        goToMeasurement() {
+            this.$router.push('/measure/new');
+        },
+        goToProfile() {
+          this.$router.push('/profile');
         },
     },
     computed: {
@@ -222,10 +247,16 @@
             if (this.bpm <= 100) return 'rgba(177, 222, 53, 1)';
             return 'rgba(255, 72, 122, 1)';
         },
+        lastMeasurement() {
+            return this.pressureHistory.length > 0
+                ? this.pressureHistory[this.pressureHistory.length - 1]
+                : null;
+        },
 
     },
     mounted() {
         const healthHistory = localStorage.getItem('healthHistory');
+        this.pressureHistory = JSON.parse(localStorage.getItem('pressureHistory')) || [];
         
         if (healthHistory) {
             try {
@@ -239,6 +270,9 @@
                     this.bpm = Math.round(latestEntry.data.bpm) || this.bpm;
                     this.hrv = Math.round(latestEntry.data.hrv) || this.hrv;
                     this.stress = Math.round(latestEntry.data.stress) || this.stress;
+                    this.id = latestEntry.id || this.id;
+                    this.summaries = latestEntry.summaries || this.summaries;
+                    this.date = latestEntry.date;
                     
                     const today = new Date();
                     const entryDate = new Date(latestEntry.date);
@@ -247,10 +281,17 @@
                             entryDate.getDate() === today.getDate();
                     }
 
+                    const entryDate = new Date(latestEntry.date);
+                    const month = entryDate.toLocaleString('en-GB', { month: 'short' }).toUpperCase();
+                    const day = String(entryDate.getDate()).padStart(2, '0');
+                    const hours = String(entryDate.getHours()).padStart(2, '0');
+                    const minutes = String(entryDate.getMinutes()).padStart(2, '0');
+                    this.formattedDate = `${month} ${day} ${hours}:${minutes}`;
+
 
             } catch (error) {
                 console.error('Error parsing heart rate data:', error);
-                this.$router.push({ name: 'home' });
+                this.$router.push('/');
             }
 
         }

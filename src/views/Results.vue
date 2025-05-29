@@ -59,22 +59,92 @@
     </div>
   </template>
   
-  <script>
+<script>
+import { useQuery, useMutation } from '@vue/apollo-composable';
 import Metrics from '@/components/Metrics.vue';
+import { CREATE_PROFILE, CREATE_PULSE_HISTORY, GET_PROFILE } from '@/utils/database';
 
   export default {
     data() {
       return {
         bpm: 0,
+        profileId: null,
       };
     },
     components: {
       Metrics,
     },
     methods: {
-        continueButton() {
-            localStorage.removeItem('heartRateData');
-            this.$router.push('/dashboard');
+        async continueButton() {
+            try {
+                const firebaseToken = localStorage.getItem('firebaseToken');
+                if (!firebaseToken) {
+                  console.log('No firebaseToken found in localStorage');
+                  this.$router.push('/sign-in');
+                  return;
+                }
+                const { data: profileData, error: profileError } = await this.getProfile();
+                let profileId = profileData?.profile?.id;
+
+                if (profileError) {
+                  console.log('Error fetching profile:', profileError);
+                }
+
+                if (!profileId) {
+                  
+                  const healthData = JSON.parse(localStorage.getItem('health') || '{}');
+                  const profileInput = {
+                    gender: healthData?.gender?.toLowerCase() || 'male',
+                    height: parseFloat(healthData.height) || 180,
+                    weight: parseFloat(healthData.weight) || 68
+                  };
+                  
+
+                  const { data: createData, error: createError } = await this.createProfile({
+                    input: profileInput,
+                  });
+
+                  if (createError) {
+                    console.log('Error creating profile:'+createError);
+                    this.$router.push('/sign-in');
+                    return;
+                  }
+
+                  if (createData?.profileCreate?.id) {
+                    console.log('Profile created with ID:', createData.profileCreate.id);
+                    this.profileId = createData.profileCreate.id;
+                    console.log('Profile created successfully!');
+                  } else {
+                    console.log('Profile creation failed: No ID returned');
+                    return;
+                  }
+
+                  if(createData && createData.profileCreate.id) {
+                    console.log('YAS')
+                  }
+                }
+
+
+                if (this.bpm) {
+                  const { data: pulseData, error: pulseError } = await this.createPulseHistory({
+                    input: { 
+                      
+                      pulse: parseInt(this.bpm) },
+                  });
+
+                  if (pulseError) {
+                    console.log('Error creating pulse history:'+pulseError);
+                  }
+
+                  console.log('Pulse history created:', pulseData);
+                }
+
+                localStorage.removeItem('heartRateData');
+                this.$router.push('/sign-in');
+            } catch (error) {
+              console.log('Error in continueButton:'+error);
+              this.$router.push('/sign-in');
+            }
         }
     },
     computed: {
@@ -90,11 +160,29 @@ import Metrics from '@/components/Metrics.vue';
         try {
             const parsedData = JSON.parse(heartRateData);
             this.bpm = parsedData.bpm;
+            this.date = parsedData.date;
         } catch (error) {
             console.error('Error parsing heart rate data:', error);
             this.$router.push('/dashboard');
         }
-    }
+    },
+    setup() {
+        const { result: profileResult, error: profileError} = useQuery(GET_PROFILE);
+        const { mutate: createProfileMutate, error: createProfileError } = useMutation(CREATE_PROFILE);
+        const { mutate: createPulseHistoryMutate, error: createPulseHistoryError  } = useMutation(CREATE_PULSE_HISTORY);
+
+        return {
+          getProfile: async () => ({ data: profileResult.value, error: profileError.value }),
+          createProfile: async (variables) => {
+            const { data, error } = await createProfileMutate(variables);
+            return { data, error: error || createProfileError.value };
+          },
+          createPulseHistory: async (variables) => {
+            const { data, error } = await createPulseHistoryMutate(variables);
+            return { data, error: error || createPulseHistoryError.value };
+          },
+        };
+    },
   };
   </script>
   

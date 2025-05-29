@@ -146,8 +146,13 @@
           this.time = 0;
           this.bpm = this.finalBpm;
           this.measurementTimer = null;
-          // this.$router.push('/personal-data');
+          const firebaseToken = localStorage.getItem('firebaseToken');
+          if (!firebaseToken) {
+            this.$router.push('/personal-data');
+          } else {
           this.$router.push('/results');
+          }
+
 
         }, 20000);
       },

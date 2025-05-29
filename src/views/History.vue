@@ -40,7 +40,7 @@
         <div class="selected-date">
           {{ formatDate(date) }}
         </div>
-        <div v-for="(record, index) in group" :key="index" class="record">
+        <div v-for="(record, index) in group" :key="record.id" class="record">
           <div class="record-header">
             <span>{{ formatTime(record.date) }}</span>
           </div>
@@ -48,8 +48,26 @@
             <svg class="line" viewBox="0 0 289 1" fill="none" xmlns="http://www.w3.org/2000/svg">
               <line y1="0.5" x2="289" y2="0.5" stroke="white"/>
             </svg>
-            <div class="record-content" ref="recordContent" @touchstart="onTouchStart($event, index)" @touchmove="onTouchMove($event, index)" @touchend="onTouchEnd($event, index)" >            
-              <button @click="pulseInfo(record)" class="icon">
+            <div class="record-content" :ref="'recordContent' + record.id" @touchstart="onTouchStart($event, record.id)" @touchmove="onTouchMove($event, record.id)" @touchend="onTouchEnd($event, record.date + index)" >        
+              
+              <button
+                v-if="record.type === 'pressure'"
+                @click="pressureInfo(record)"
+                class="icon"
+              >
+                <svg width="100%" height="100%" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0 24C0 10.7452 10.7452 0 24 0C37.2548 0 48 10.7452 48 24C48 37.2548 37.2548 48 24 48C10.7452 48 0 37.2548 0 24Z" fill="#FF91AF"/>
+                  <path d="M32.75 25.25C32.75 30.08 28.83 34 24 34C19.17 34 15.25 30.08 15.25 25.25C15.25 20.42 19.17 16.5 24 16.5C28.83 16.5 32.75 20.42 32.75 25.25Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M24 20V25" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M21 14H27" stroke="white" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+
+              <button  
+                v-if="record.type === 'pulse'"
+                @click="pulseInfo(record)" 
+                class="icon"
+              >
                 <svg width="100%" height="100%" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M0 24C0 10.7452 10.7452 0 24 0C37.2548 0 48 10.7452 48 24C48 37.2548 37.2548 48 24 48C10.7452 48 0 37.2548 0 24Z" fill="#B1DE35"/>
                   <path d="M33.9999 29.2004C33.9999 30.1004 33.7499 30.9503 33.2999 31.6703C32.4699 33.0603 30.9499 34.0004 29.1999 34.0004C27.4499 34.0004 25.9199 33.0603 25.0999 31.6703C24.6599 30.9503 24.3999 30.1004 24.3999 29.2004C24.3999 26.5504 26.5499 24.4004 29.1999 24.4004C31.8499 24.4004 33.9999 26.5504 33.9999 29.2004Z" stroke="white" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
@@ -57,21 +75,25 @@
                   <path d="M34 20.6896C34 22.6596 33.49 24.3996 32.69 25.9096C31.81 24.9796 30.57 24.3997 29.2 24.3997C26.55 24.3997 24.4 26.5496 24.4 29.1996C24.4 30.4296 24.87 31.5497 25.63 32.3997C25.26 32.5697 24.92 32.7096 24.62 32.8096C24.28 32.9296 23.72 32.9296 23.38 32.8096C20.48 31.8196 14 27.6896 14 20.6896C14 17.5996 16.49 15.0996 19.56 15.0996C21.37 15.0996 22.99 15.9797 24 17.3297C25.01 15.9797 26.63 15.0996 28.44 15.0996C31.51 15.0996 34 17.5996 34 20.6896Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
+
               <div class="data">
-                <div class="data-element">
-                  {{ record.data.bpm }} bpm 
-                  <br> <span>Pulse</span>
+                <div class="data-element" v-if="record.type === 'pulse'">
+                  {{ record.data.bpm }} bpm <br /><span>Pulse</span>
                 </div>
-                <div class="data-element">
-                  {{ record.data.hrv }} ms 
-                  <br> <span>HRV</span>
+                <div class="data-element" v-if="record.type === 'pulse'">
+                  {{ record.data.hrv }} ms <br /><span>HRV</span>
                 </div>
-                <div class="data-element">
-                  {{ record.data.stress }}% 
-                  <br> <span>Stress</span>
+                <div class="data-element" v-if="record.type === 'pulse'">
+                  {{ record.data.stress }}% <br /><span>Stress</span>
+                </div>
+                <div class="data-element" v-if="record.type === 'pressure'">
+                  {{ record.systolic }}/{{ record.diastolic }} mmHg <br /><span>{{ record.category }}</span>
+                </div>
+                <div class="data-element" v-if="record.type === 'pressure'">
+                  {{ record.category }}
                 </div>
               </div>
-              <button @click="deleteRecord(record.date)" class="delete-btn" ref="deleteBtn">
+              <button @click="deleteRecord(record.date)" class="delete-btn" :ref="'deleteBtn' + record.id">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M21 5.98047C17.67 5.65047 14.32 5.48047 10.98 5.48047C9 5.48047 7.02 5.58047 5.04 5.78047L3 5.98047" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                   <path d="M8.5 4.97L8.72 3.66C8.88 2.71 9 2 10.69 2H13.31C15 2 15.13 2.75 15.28 3.67L15.5 4.97" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -90,10 +112,15 @@
   </template>
   
 <script>
+import { PULSE_HISTORY_QUERY } from '@/utils/database';
+import { useQuery } from '@vue/apollo-composable';
+import { ref } from 'vue';
+
   export default {
     name: 'History',
     data() {
       return {
+        pressureHistory: [],
         healthHistory: [],
         tabs: ['View all', 'Heart rate', 'Blood pressure'],
         activeTab: 0,
@@ -102,7 +129,14 @@
     },
     computed: {
       groupedRecords() {
-        const sortedRecords = [...this.healthHistory].sort((a, b) => b.date - a.date);
+        let filteredRecords = [...this.healthHistory, ...this.pressureHistory];
+
+        if (this.activeTab === 1) { 
+          filteredRecords = filteredRecords.filter(record => record.type === 'pulse');
+        } else if (this.activeTab === 2) { 
+          filteredRecords = filteredRecords.filter(record => record.type === 'pressure');
+        }
+        const sortedRecords = filteredRecords.sort((a, b) => b.date - a.date);
 
         const grouped = {};
         sortedRecords.forEach(record => {
@@ -140,7 +174,28 @@
         .toLowerCase()
         .replace(':', '.');
       },
-      loadHealthHistory() {
+      async loadHealthHistory() {
+        try {
+          const { data, error } = await this.getHistory({ limit: 100, offset: 0 });
+          if (data && data.pulseHistory && data.pulseHistory.items) {
+            this.healthHistory = data.pulseHistory.items.map((item) => ({
+              id: item.id,
+              date: item.createdAt,
+              type: 'pulse',
+              data: {
+                bpm: item.pulse,
+              },
+            }));
+            // localStorage.setItem('healthHistory', JSON.stringify(this.healthHistory));
+            console.log('Fetched history:', this.healthHistory);
+          }
+          if (error) {
+            console.error('Error with history:', error);
+          }
+        } catch (error) {
+          console.error("Error with request" + error);
+        }
+        
         let healthHistory = localStorage.getItem('healthHistory');
         healthHistory = healthHistory ? JSON.parse(healthHistory) : [];
   
@@ -148,26 +203,54 @@
           healthHistory = [];
         }
         this.healthHistory = healthHistory;
+        this.healthHistory.forEach(record => {
+          record.type = 'pulse';
+        } );
+      },
+      loadPressureHistory() {
+        this.pressureHistory = JSON.parse(localStorage.getItem('pressureHistory')) || [];
+        this.pressureHistory.forEach(record => {
+          if (record.systolic < 90 || record.diastolic < 60) record.category = 'Hypotension';
+          else if (record.systolic < 120 && record.diastolic < 80) record.category = 'Normal';
+          else if (record.systolic < 130 && record.diastolic < 80) record.category = 'Elevated';
+          else if (record.systolic < 140 || (record.systolic < 180 && record.diastolic < 90)) record.category = 'Stage 1 Hypertension';
+          else if (record.systolic < 180 || (record.systolic < 180 && record.diastolic < 120)) record.category = 'Stage 2 Hypertension';
+          else record.category = 'Hypertensive Crisis';
+          record.type = 'pressure';
+        }); 
       },
       setActiveTab(index) {
         this.activeTab = index;
       },
       pulseInfo(record) {
         localStorage.setItem('heartRateData', JSON.stringify({
+                id: record.id,
                 bpm: record.data.bpm,
                 hrv: record.data.hrv,
                 stress: record.data.stress,
+                date: record.date,
+                summaries: record.summaries || undefined
             }));
-            this.$router.push(`/results/${record.date}`)
+            this.$router.push(`/results/${record.id}`)
+      },
+      pressureInfo(record) {
+        localStorage.setItem('pressureData', JSON.stringify({
+          id: record.id,
+          systolic: record.systolic,
+          diastolic: record.diastolic,
+          category: record.category,
+          date: record.date,
+        }));
+        // this.$router.push(`/pressure-results/${record.id}`);
       },
       onTouchStart(event, index) {
-      const touch = event.touches[0];
-      this.touchState[index] = {
-        startX: touch.clientX,
-        currentX: touch.clientX,
-        translateX: 0,
-        isSwiping: false
-      };
+        const touch = event.touches[0];
+        this.touchState[index] = {
+          startX: touch.clientX,
+          currentX: touch.clientX,
+          translateX: 0,
+          isSwiping: false
+        };
       },
       onTouchMove(event, index) {
         if (!this.touchState[index]) return;
@@ -179,10 +262,10 @@
         const translateX = Math.max(-80, Math.min(0, deltaX));
         this.touchState[index].translateX = translateX;
 
-        const recordContent = this.$refs.recordContent[index];
+        const recordContent = this.$refs['recordContent' + index][0];
         recordContent.style.transform = `translateX(${translateX}px)`;
 
-        const deleteBtn = this.$refs.deleteBtn[index];
+        const deleteBtn = this.$refs['deleteBtn' + index][0];
         const btnWidth = Math.min(80, Math.abs(translateX));
         deleteBtn.style.width = `${btnWidth}px`;
       },
@@ -213,6 +296,25 @@
     },
     mounted() {
       this.loadHealthHistory();
+      this.loadPressureHistory();
+    },
+    setup() {
+      const variables = ref({ limit: 100, offset: 0 });
+      const { result: pulseResult, error: pulseError, refetch } = useQuery(PULSE_HISTORY_QUERY);
+      return {
+        getHistory: async (vars) => {
+          try {
+            variables.value = { ...variables.value, ...vars };
+            await refetch(variables.value); 
+            return {
+              data: pulseResult.value,
+              error: pulseError.value,
+            };
+          } catch (error) {
+            return { data: null, error };
+          }
+        },
+      };
     }
   };
 </script>
@@ -236,6 +338,7 @@
 }
 .header h1 {
   margin: 0;
+  width: 100%;
   font-weight: 700;
   font-size: 18px;
   line-height: 120%;
@@ -244,15 +347,17 @@
   color: #0D0D12;
 }
 
-.back-btn, .add-btn {
+.add-btn {
   background: none;
   border: none;
   padding: 0;
   width:30px; 
   height: 30px;
   cursor: pointer;
+  right: 0;
+  position: absolute;
 }
-.back-btn svg, .add-btn svg, .icon svg{
+.add-btn svg, .icon svg{
   position: relative;
   width: 100%;
   height: 100%;
@@ -313,11 +418,12 @@
   justify-content: space-between;
   width: 100%;
   gap: 8px;
+  
 }
 
 .record-header {
   font-weight: 400;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 140%;
   text-align: right;
   letter-spacing: 0.2px;
@@ -328,7 +434,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  /* width: 289px; */
+
 }
 svg.line {
   width: 100%;

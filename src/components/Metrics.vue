@@ -57,19 +57,28 @@
     },
     async mounted() {
         const heartRateData = localStorage.getItem('heartRateData');
+        let parsedData;
         try {
-            const parsedData = JSON.parse(heartRateData);
+            parsedData = JSON.parse(heartRateData);
             this.bpm = parsedData.bpm;
             this.hrv = parseInt(parsedData.hrv);
-            this.stress = parsedData.stress;
+            this.stress = parseInt(parsedData.stress);
         } catch (error) {
             console.error('Error parsing heart rate data:', error);
             this.$router.push('/dashboard');
         }
 
+        let needToFetchSummaries = !parsedData.summaries;
+
+        if (!needToFetchSummaries) {
+          const summaries = parsedData.summaries;
+          this.bpmSummary = summaries[0].trim();
+          this.hrvSummary = summaries[1].trim();
+          this.stressSummary = summaries[2].trim();
+          return;
+        }
+
         try {
-            // const response = await fetch('@/prompts/prompt.txt');
-            // if (!response.ok) throw new Error('Failed to load prompt file');
             const promptText = `You are a health assistant providing concise, conversational summaries for health metrics based on given values. I will provide three metrics: heart rate (bpm), heart rate variability (hrv in milliseconds), and stress (percentage). For each metric, generate a short summary (1-2 sentences) in plain text, using natural, speech-like language as if you're talking to the user. Do not use symbols, bold, italics, or any formatting—just plain text. Separate each summary with ||| so they can be split easily in code. Use the following metric values: heart rate is {bpm} bpm, hrv is {hrv} ms, stress is {stress}%. Here’s how to structure the output:
 
 Heart Rate summary: Comment on the heart rate value, considering ranges like low (<60 bpm), normal (60-100 bpm), or high (>100 bpm).
@@ -86,6 +95,35 @@ Now, generate the summaries for  bpm=${this.bpm}BPM, hrv=${this.hrv}ms, stress=$
             this.bpmSummary = summaries[0].trim();
             this.hrvSummary = summaries[1].trim();
             this.stressSummary = summaries[2].trim();
+            const newHeartRateData = {
+              id: parsedData.id,
+              bpm: this.bpm,
+              hrv: this.hrv,
+              stress: this.stress,
+              summaries,
+            };
+            localStorage.setItem('heartRateData', JSON.stringify(newHeartRateData));
+
+            let healthHistory = localStorage.getItem('healthHistory');
+            healthHistory = healthHistory ? JSON.parse(healthHistory) : [];
+
+            if (!Array.isArray(healthHistory)) healthHistory = [];
+
+            const index = healthHistory.findIndex(entry => entry.id === parsedData.id);
+            
+            if (index !== -1) {
+
+              const element = healthHistory[index];
+              const updatedEntry = {
+                id: element.id,
+                date: element.date,
+                data: element.data,
+                summaries
+              };
+              // Update existing entry
+              healthHistory[index] = updatedEntry;
+            } 
+            localStorage.setItem('healthHistory', JSON.stringify(healthHistory));
         } catch (error) {
             console.error('Error fetching summaries from Groq API:', error);
             this.bpmSummary = 'Failed to load Heart Rate summary.';

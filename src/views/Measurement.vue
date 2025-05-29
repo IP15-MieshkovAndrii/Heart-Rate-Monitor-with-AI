@@ -47,7 +47,7 @@ import Metrics from '@/components/Metrics.vue';
         try {
             const parsedData = JSON.parse(heartRateData);
             this.bpm = parsedData.bpm;
-            const timestamp = this.$route.params.id;
+            const timestamp = parsedData.date;
 
             // Convert timestamp to Date object
             const dateObj = new Date(parseInt(timestamp));
@@ -142,23 +142,6 @@ import Metrics from '@/components/Metrics.vue';
   .add-bp-btn .info-icon {
     margin-left: 5px;
   }
-
-.back-btn{
-  position: absolute;
-  left:0;
-  background: none;
-  border: none;
-  padding: 0;
-  width:30px; 
-  height: 30px;
-  cursor: pointer;
-}
-.back-btn svg{
-  position: relative;
-  width: 100%;
-  height: 100%;
-  z-index: 3;
-}
 
   .ellipse-top {
     top: -15vh;

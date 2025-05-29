@@ -96,9 +96,7 @@
   </template>
   
   <script>
-// import fetchGroqApi from '@/utils/ai';
 
-  
   export default {
     name: 'PersonalData',
     data() {
@@ -123,42 +121,12 @@
     methods: {
       async submitForm() {
         this.assessment = null;
-  
-  //       const prompt = `
-  // You are a health assistant evaluating a heart rate measurement. The user has provided the following data:
-  // - Average heart rate: ${this.heartRateData.bpm || 0} BPM
-  // - Intervals between heartbeats: ${this.heartRateData.intervals.join(', ')} seconds
-  // - Gender: ${this.selectedGender}
-  // - Age: ${this.age} years
-  // - Weight: ${this.weight} kg
-  // - Height: ${this.height} cm
-  
-  // Based on this data, evaluate the heart rate:
-  // 1. Is the heart rate good or bad? Consider typical resting heart rate ranges (60–100 BPM for adults, adjusted for age and fitness level) and heart rate variability (intervals should be relatively consistent, ~0.6–1.0s).
-  // 2. Provide specific recommendations:
-  //    - If the heart rate is bad (too high, too low, or irregular intervals), suggest appropriate sports or exercises to improve cardiovascular health (e.g., jogging, swimming, yoga).
-  //    - If the heart rate is good, suggest maintenance activities (e.g., regular walking, strength training).
-  //    - Include any other relevant advice (e.g., diet, stress management, consulting a doctor if concerning).
-  
-  // Return a clear assessment ("good" or "bad") and a list of recommendations in bullet points.
-  //       `;
 
-        const personData = {heartRateData: this.heartRateData, gender: this.selectedGender, age: this.age, weight: this.weight, heigth: this.height};
+        const personData = {gender: this.selectedGender, age: this.age, weight: this.weight, heigth: this.height};
         if(this.personData) {
             localStorage.setItem('health', JSON.stringify(personData));
         }
   
-        // try {
-        //   const response = await fetchGroqApi(prompt);
-        //   this.assessment = response.choices[0]?.message?.content || "";
-        //   if(this.assessment) {
-        //     localStorage.setItem('assessment', this.assessment);
-        //   }
-        // } catch (err) {
-        //   this.error = 'Failed to get assessment. Please check your API key or try again.';
-        //   console.error('ChatGPT API error:', err);
-        // }
-
         this.$router.push('/results');
       },
 

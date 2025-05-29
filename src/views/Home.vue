@@ -1,6 +1,5 @@
 <template>
   <div class="home">
-    <!-- Loading Screen -->
     <div v-if="showLoading" class="loading-screen">
       <h1>Welcome to <br>My Heart Rate Monitor - Pulse</h1>
       <div class="heartbeat-line" :style="{ backgroundImage: `url(${publicPath}images/Layer_1.png)`}" loading="lazy"></div>
@@ -9,7 +8,6 @@
 
     </div>
 
-    <!-- Message Screens -->
     <div v-else class="message-screen" >
       <div class="splash" :style="{ backgroundImage: `url(${currentBackground})` }"></div>
       <div class="message-box">
@@ -140,7 +138,7 @@ export default {
   width: 100%;
   background-size: cover;
   background-position: center;
-  height: 60vh;
+  height: 100vh;
 }
 
 .message-box {
@@ -148,7 +146,6 @@ export default {
   width: 100%;
   height: 40vh;
   bottom: 0;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -168,6 +165,7 @@ export default {
   top: 0;
   z-index: 3; 
   width: 100vw;
+  background: transparent;
 }
 
 .message-box p {
